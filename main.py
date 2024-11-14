@@ -74,6 +74,8 @@ if __name__ == '__main__':
         with open('data/pairs.json', 'r') as file:
             key_pairs = json.loads(file.read())
 
+    if not os.path.isdir('data'):
+        os.mkdir('data')
     if not os.path.isfile('data/config.json'):
         config = {'ver': VERSION}
         print('Welcome! I hope you will find it useful :D\n'
