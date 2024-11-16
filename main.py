@@ -4,12 +4,12 @@ import time
 
 import keyboard
 
-VERSION = '0.0.2'
+VERSION = '0.0.3'
 
 
 def stats_func(e: keyboard.KeyboardEvent) -> None:
     if e.name is not None:
-        key_stats[e.scan_code] = key_stats.get(e.scan_code, 0) + 1
+        key_stats[str(e.scan_code)] = key_stats.get(str(e.scan_code), 0) + 1
         make_pair_stats(e)
 
 
@@ -44,15 +44,15 @@ def compare_versions() -> None:
 def update() -> None:
     config['ver'] = VERSION
     # todo for future updates
-    with open('data/config.json', 'w') as config_file:
-        config_file.write(json.dumps(config))
+    with open('data/config.json', 'w') as file:
+        file.write(json.dumps(config))
 
 
 def format_counter(count: int) -> str:
     if 0 <= count < 1e3:
         result = str(count)
     elif 1e3 <= count < 1e6:
-        result = f'{(count/1e3):.2f} k'
+        result = f'{(count / 1e3):.2f} k'
     elif 1e6 <= count < 1e9:
         result = f'{(count / 1e6):.2f} m'
     else:
@@ -80,6 +80,7 @@ if __name__ == '__main__':
         config = {'ver': VERSION}
         print('Welcome! I hope you will find it useful :D\n'
               'Do you use RU keyboard? y/n')
+        time.sleep(0.1)
         key = keyboard.read_key()
         print()
         config['ru'] = 1 if keyboard.key_to_scan_codes(key)[0] == 21 else 0
@@ -150,7 +151,7 @@ if __name__ == '__main__':
                 neighbors[keys[1]] = neighbors.get(keys[1], 0) + key_pairs[key]
                 nearest_neighbors[keys[0]] = neighbors
 
-            print('All characters rate:')
+            print('All characters rate:\n')
             key_usage_count = dict(sorted(key_usage_count.items(), key=lambda item: item[1], reverse=True))
             for key in key_usage_count.keys():
                 key_rate = key_usage_count[key] / sum(key_usage_count.values())
@@ -160,26 +161,36 @@ if __name__ == '__main__':
                 for neighbor in nearest_neighbors[key].keys():
                     neighbor_rate = nearest_neighbors[key][neighbor] / sum(nearest_neighbors[key].values())
                     print(f'{neighbor_rate * 100:.2f}% [{key_map[str(neighbor)]}]', end=', ')
-                print()
+                print('\n\n')
         elif key == '4':
             print('Press Ctrl + Backspace to exit')
             keyboard.on_press(debug_func)
             keyboard.wait('ctrl+backspace')
             time.sleep(0.5)
         elif key == '9':
-            try:
-                os.remove('data/config.json')
-                print('Success!\nExiting...')
-            except FileNotFoundError:
-                print('No config file detected.\nExiting...')
-            time.sleep(1)
-            exit()
+            print('Are you sure to clear settings? y/n')
+            time.sleep(0.1)
+            key = keyboard.read_key()
+            print()
+            if keyboard.key_to_scan_codes(key)[0] == 21:
+                try:
+                    os.remove('data/config.json')
+                    print('Success!\nExiting...')
+                except FileNotFoundError:
+                    print('No config file detected.\nExiting...')
+                time.sleep(1)
+                exit()
         elif key == '0':
-            try:
-                os.remove('data/stats.json')
-                os.remove('data/pairs.json')
-                print('Data has been cleared!')
-            except FileNotFoundError:
-                print('No data detected.')
+            print('Are you sure to clear data? y/n')
+            time.sleep(0.1)
+            key = keyboard.read_key()
+            print()
+            if keyboard.key_to_scan_codes(key)[0] == 21:
+                try:
+                    os.remove('data/stats.json')
+                    os.remove('data/pairs.json')
+                    print('Data has been cleared!')
+                except FileNotFoundError:
+                    print('No data detected.')
         else:
             exit()
